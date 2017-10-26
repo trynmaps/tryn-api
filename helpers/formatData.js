@@ -1,6 +1,6 @@
 function putVehiclesIntoRoutes(vehicles) {
     const routes = {};
-    vehicles.foreach((vehicle) => {
+    vehicles.forEach((vehicle) => {
         const vehiclesInRoute = routes[vehicle.rid] || [];
         vehiclesInRoute.push(vehicle);
         routes[vehicle.rid] = vehiclesInRoute;

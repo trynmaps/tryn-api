@@ -2,34 +2,34 @@ const { buildSchema } = require('graphql');
 
 const schema = buildSchema(`
     type Vehicle {
-        vid: Int
-        lat: Float!
-        lon: Float!
+        vid: String
+        lat: Float
+        lon: Float
         heading: Int
     }
 
     type Route {
-        name: String!
-        vehicles: [Vehicle!]
+        name: String
+        vehicles: [Vehicle]
     }
 
     type State {
-        time: Int!
-        routes: [Route!]
+        time: String
+        routes: [Route]
     }
 
     type TrynState {
         agency: String
-        startTime: Int
-        endTime: Int
-        states: [State!]
+        startTime: String
+        endTime: String
+        states: [State]
     }
 
     type Query {
         trynState(
             agency: String!
-            startTime: Int!
-            endTime: Int
+            startTime: String!
+            endTime: String
             routes: [String!]
         ): TrynState
     }
