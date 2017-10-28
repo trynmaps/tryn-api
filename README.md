@@ -1,11 +1,13 @@
-# trynmaps-backend
-Backend for the Tryn Maps webapp
+# Trynmaps API
 
-## Getting started
+API for the Tryn Maps webapp
 
-1. Fork this repo.
-2. run `docker build -t trynmaps-api .`.
-3. run `docker run -p 4000:4000 trynmaps-api:latest`.
+## Getting Started
 
-See our getting started guide for contribution and deployment guidelines.
+See our welcome doc for contribution and deployment guidelines.
 https://docs.google.com/document/d/1KTWRc4EO63_lDxjcp0mmprgrFPfFazWJEy2MwxBuw4E/edit?usp=sharing
+
+1. Clone this repo.
+2. Run `npm install`.
+3. Ensure Orion's running.
+4. Run `npm start`.
