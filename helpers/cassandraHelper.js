@@ -5,7 +5,8 @@ const client = new cassandra.Client({
     contactPoints: [config.cassandraURL],
 });
 client.connect((err) => {
-    console.log(err);
+    console.log('connected to cassandra');
+    console.log('error: ' + err);
 });
 
 function executeQuery(query, params) {

@@ -7,8 +7,13 @@ const resolvers = {
         const { agency, startTime, endTime = startTime, routes } = obj;
         const { vdate, vhour } = getPrimaryKeys(startTime, endTime)[0];
         console.log(obj);
+
+        // TODO - get these from config file using agency name
+        const keyspace = agency;
+        const vehicleTableName = `${agency}_realtime_vehicles`;
+
         const response = await executeQuery(
-            'SELECT * FROM muni.muni_realtime_vehicles WHERE vdate = ? AND vhour = ? AND vtime > ? AND vtime < ?',
+            `SELECT * FROM ${keyspace}.${vehicleTableName} WHERE vdate = ? AND vhour = ? AND vtime > ? AND vtime < ?`,
             [vdate, vhour, new Date(startTime - 7500), new Date(startTime - (-7500))],
         );
         const vehicles = response.rows;
