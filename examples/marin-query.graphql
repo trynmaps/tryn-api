@@ -1,0 +1,26 @@
+# replace "marin" with "muni" to use that as the agency
+
+{
+  trynState(agency: "marin", startTime: "1510554087312") {
+    agency
+    startTime
+    states {
+      time
+      routes {
+        stops {
+          sid
+          name
+          lat
+          lon
+        }
+        name
+        vehicles {
+          vid
+          lat
+          lon
+          heading
+        }
+      }
+    }
+  }
+}
