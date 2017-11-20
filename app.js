@@ -1,6 +1,6 @@
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-const schema = require('./schema');
+const getSchema = require('./schema');
 const resolvers = require('./resolvers');
 
 const app = express();
@@ -8,7 +8,7 @@ const cors = require('cors');
 
 app.use('/graphql', cors(), graphqlHTTP(
   async (request, response, graphQLParams) => ({
-    schema,
+    schema: await getSchema(),
     rootValue: resolvers,
     graphiql: true,
   })));
