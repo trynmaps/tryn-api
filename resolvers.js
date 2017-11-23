@@ -1,8 +1,7 @@
 const getPrimaryKeys = require('./helpers/getCassandraKeys');
 const executeQuery = require('./helpers/cassandraHelper');
 const putVehiclesIntoRoutes = require('./helpers/formatData');
-const getStopsFromRoute = require('./helpers/formatData');
-const getRoutes = require('./helpers/formatData');
+const getStopsFromRoute = require('./helpers/getStopsAPI');
 
 const resolvers = {
     trynState: async (obj) => {
@@ -20,17 +19,10 @@ const resolvers = {
         );
 
         const vehicles = response.rows;
-        
-        console.log(routes);
 
         // there is only one state as we assume endTime was not provided
         const stateTime = (vehicles[0] || {}).vtime;
-        const stateRoutes = {
-            vehicles: putVehiclesIntoRoutes(vehicles),
-            stops: getStopsFromRoute(getRoutes),
-        };
-
-        //console.log(stops);
+        const stateRoutes = {vehicle: putVehiclesIntoRoutes(vehicles), stops: getStopsFromRoute};
 
         return {
             agency,
