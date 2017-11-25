@@ -18,14 +18,6 @@ function getStopsFromRouteID(routeID) {
     });
 }
 
-function getActualStops(stops) {
-    return Promise.all(stops).then((stopResults) => {
-        return stopResults;
-    }).catch((error)=>{
-        console.log(error);
-    });
-}
-
 const resolvers = {
     trynState: async (obj) => {
         const { agency, startTime, endTime = startTime, routes } = obj;
@@ -51,14 +43,14 @@ const resolvers = {
             routeIDs.add(vehicle.rid);
         });
 
-        var stops = [];
-        routeIDs.forEach((routeID) => stops.push(getStopsFromRouteID(routeID)));
-        var actualStops = await getActualStops(stops);
-        const stateRoutes = getRouteObj(routeIDs, vehicles, actualStops);
-        // TODO(): FIGURE OUT HOW TO USE AWAIT.
-
-        
-        //console.log(stateRoutes);
+        var stopsPromises = [];
+        routeIDs.forEach((routeID) => stopsPromises.push(getStopsFromRouteID(routeID)));
+        var stops = await (Promise.all(stopsPromises).then((stopsForOneRoute) => {
+            return stopsForOneRoute;
+        }).catch((error)=>{
+            console.log(error);
+        }));
+        const stateRoutes = getRouteObj(routeIDs, vehicles, stops);
 
         return {
             agency,
