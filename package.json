@@ -27,5 +27,8 @@
   },
   "peerDependencies": {
     "graphql": "^0.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
   }
 }
