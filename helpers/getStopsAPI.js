@@ -1,36 +1,59 @@
 const axios = require('axios');
 const config = require('../config');
 
-function getRoutes() {
+function getStops() {
     return axios.get('/agencies/sf-muni/routes', {
       baseURL: config.restbusURL
     })
     .then((response) => {
       const routes = response.data;
-      return routes;
+      const routeIDs = [];
+      routes.forEach((obj) => {
+        routeIDs.push(obj.id);
+      })
+      routeIDs.forEach((routeID) => {
+        return axios.get(`/agencies/sf-muni/routes/${routeID}`, {
+          baseURL: config.restbusURL
+        })
+        .then((response) => {
+          const stopsObj = response.data.stops;
+          console.log(routes);
+          return Object.keys(routeIDs).map(routeName => ({
+            name: routeName,
+            stops: stopsObj
+          }));
+        })
+      })
     })
     .catch((error) => {
-      console.log(error);
+      console.error('getRoutes(): ' + error);
     });
 }
 
 function getStopsFromRoute() {
-    Promise.all(getRoutes.map(route => {
-      return axios.get(`/agencies/sf-muni/routes/${route.id}`, {
-      baseURL: config.restbusURL
+    const routes = getRoutes();
+    routes.forEach((route) => {
+      return axios.get(`/agencies/sf-muni/routes/${route}`, {
+        baseURL: config.restbusURL
       })
-    }))
-    .then((responses) => {
-      return responses.map(response => {  
-        const stops = response.data.stops;
-        return stops.map(addStopsToRoute).map(stopObj => {
-            stopObj.rid = response.data.id;
-            return stopObj;
-        });
+      .then((response) => {
+        const route = [];
+        route.push(response);
+        route.forEach((obj) => {
+          console.log(obj.stops);
+        })
+
+        // return responses.map(response => {  
+        //   const stops = response.data.stops;
+        //   return stops.map(addStopsToRoute).map(stopObj => {
+        //     stopObj.rid = response.data.id;
+        //     return stopObj;
+        //   });
+        // })
       })
     })
     .catch((error) => {
-      console.log(error);
+      console.error('getStopsFromRoute(): ' + error);
     });
 }
 
@@ -44,4 +67,4 @@ function addStopsToRoute(nextbusObject) {
   };
 }
 
-module.exports = getStopsFromRoute;
+module.exports = getStops;

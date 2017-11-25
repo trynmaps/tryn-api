@@ -1,7 +1,30 @@
 const getPrimaryKeys = require('./helpers/getCassandraKeys');
 const executeQuery = require('./helpers/cassandraHelper');
-const putVehiclesIntoRoutes = require('./helpers/formatData');
-const getStopsFromRoute = require('./helpers/getStopsAPI');
+const getRouteObj = require('./helpers/formatData');
+
+const axios = require('axios');
+const config = require('./config');
+
+function getStopsFromRouteID(routeID) {
+    return axios.get(`/agencies/sf-muni/routes/${routeID}`, {
+      baseURL: config.restbusURL
+    })
+    .then((response) => {
+      const stopsObj = response.data;
+      return stopsObj;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function getActualStops(stops) {
+    return Promise.all(stops).then((stopResults) => {
+        return stopResults;
+    }).catch((error)=>{
+        console.log(error);
+    });
+}
 
 const resolvers = {
     trynState: async (obj) => {
@@ -22,7 +45,20 @@ const resolvers = {
 
         // there is only one state as we assume endTime was not provided
         const stateTime = (vehicles[0] || {}).vtime;
-        const stateRoutes = {vehicle: putVehiclesIntoRoutes(vehicles), stops: getStopsFromRoute};
+
+        var routeIDs = new Set();
+        vehicles.forEach((vehicle) => {
+            routeIDs.add(vehicle.rid);
+        });
+
+        var stops = [];
+        routeIDs.forEach((routeID) => stops.push(getStopsFromRouteID(routeID)));
+        var actualStops = await getActualStops(stops);
+        const stateRoutes = getRouteObj(routeIDs, vehicles, actualStops);
+        // TODO(): FIGURE OUT HOW TO USE AWAIT.
+
+        
+        //console.log(stateRoutes);
 
         return {
             agency,
@@ -34,7 +70,7 @@ const resolvers = {
                     routes: stateRoutes
                 }
             ]
-        };
+        }
     },
 }
 
