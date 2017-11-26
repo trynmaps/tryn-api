@@ -3,15 +3,15 @@ const config = require('../config');
 
 function getRouteObj(routeIDs, vehicles, stops) {
 
-  var routesMap = new Map();
+  const routesMap = new Map();
 
   vehicles.forEach((vehicle) => {
-    var key = vehicle.rid;
+    const key = vehicle.rid;
     if(routesMap.has(key)) {
-      var vehicles = routesMap.get(key).get('vehicles');      
+      const vehicles = routesMap.get(key).get('vehicles');      
       vehicles.push(vehicle);
     } else {
-      var value = new Map();
+      const value = new Map();
       value.set('vehicles', [vehicle]);
       routesMap.set(key, value);
     }
@@ -19,8 +19,8 @@ function getRouteObj(routeIDs, vehicles, stops) {
   //console.log(routesMap.get('E').get('vehicles')[0]);
   
   stops.forEach((stop) => {
-    var route = stop.id;
-    var stopsObj = stop.stops.map(makeStopsFromNextBus);
+    const route = stop.id;
+    const stopsObj = stop.stops.map(makeStopsFromNextBus);
     routesMap.get(route).set('stops', stopsObj);
   });
   //console.log(routesMap.get('E').get('stops')[0]);

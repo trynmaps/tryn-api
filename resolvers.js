@@ -38,18 +38,11 @@ const resolvers = {
         // there is only one state as we assume endTime was not provided
         const stateTime = (vehicles[0] || {}).vtime;
 
-        var routeIDs = new Set();
-        vehicles.forEach((vehicle) => {
-            routeIDs.add(vehicle.rid);
-        });
-
-        var stopsPromises = [];
+        const routeIDs = new Set(vehicles.map(vehicle => vehicle.rid));
+        let stopsPromises = [];
         routeIDs.forEach((routeID) => stopsPromises.push(getStopsFromRouteID(routeID)));
-        var stops = await (Promise.all(stopsPromises).then((stopsForOneRoute) => {
-            return stopsForOneRoute;
-        }).catch((error)=>{
-            console.log(error);
-        }));
+        const stops = await Promise.all(stopsPromises);
+
         const stateRoutes = getRouteObj(routeIDs, vehicles, stops);
 
         return {
@@ -59,10 +52,10 @@ const resolvers = {
             states: [
                 {
                     time: stateTime,
-                    routes: stateRoutes
+                    routes: stateRoutes,
                 }
             ]
-        }
+        };
     },
 }
 
