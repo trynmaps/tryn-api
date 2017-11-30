@@ -12,9 +12,6 @@ function getStopsFromRouteID(routeID) {
     .then((response) => {
       const stopsObj = response.data;
       return stopsObj;
-    })
-    .catch((error) => {
-      console.log(error);
     });
 }
 
@@ -39,9 +36,7 @@ const resolvers = {
         const stateTime = (vehicles[0] || {}).vtime;
 
         const routeIDs = new Set(vehicles.map(vehicle => vehicle.rid));
-        let stopsPromises = [];
-        routeIDs.forEach((routeID) => stopsPromises.push(getStopsFromRouteID(routeID)));
-        const stops = await Promise.all(stopsPromises);
+        const stops = await Promise.all(Array.from(routeIDs).map(getStopsFromRouteID));
 
         const stateRoutes = getRouteObj(routeIDs, vehicles, stops);
 
