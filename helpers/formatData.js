@@ -18,9 +18,9 @@ function getRouteObj(routeIDs, vehicles, stops) {
   })
   //console.log(routesMap.get('E').get('vehicles')[0]);
   
-  stops.forEach((routeStops) => {
-    const route = routeStops.id;
-    const stopsObj = routeStops.stops.map(makeStopsFromNextBus);
+  stops.forEach((routeStop) => {
+    const route = routeStop.id;
+    const stopsObj = routeStop.stops.map(makeStopsFromNextBus);
     routesMap.get(route).set('stops', stopsObj);
   });
   //console.log(routesMap.get('E').get('stops')[0]);
