@@ -61,7 +61,7 @@ type Query {
     trynState(
         agency: String!
         startTime: String!
-        endTime: String
+        endTime: String!
         routes: [String!]
     ): TrynState
 }

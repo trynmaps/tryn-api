@@ -1,13 +1,22 @@
 const axios = require('axios');
 const config = require('../config');
 
-function getRouteObj(routeIDs, vehicles, stops) {
+/*
+ * Takes routes, vehicles, and stops, and returns
+ * them in an array of routes as defined in the schema
+ * 
+ * @param routeIds: [String]
+ * @param vehicles: [Vehicle]
+ * @param stops: [Stop]
+ * @return routes: [Route]
+ */
+function getStateRoutes(routeIDs, vehicles, stops) {
 
   const routesMap = new Map();
 
   vehicles.forEach((vehicle) => {
     const key = vehicle.rid;
-    if(routesMap.has(key)) {
+    if (routesMap.has(key)) {
       const vehicles = routesMap.get(key).get('vehicles');      
       vehicles.push(vehicle);
     } else {
@@ -45,4 +54,4 @@ function makeStopsFromNextBus(nextbusObject) {
   };
 }
 
-module.exports = getRouteObj;
+module.exports = getStateRoutes;
