@@ -6,9 +6,20 @@ async function getStopsFromRouteID(routeID) {
     baseURL: config.restbusURL
   })
   .then((response) => {
-    const stopsObj = response.data;
-    return stopsObj;
-  });
+    const stopObj = response.data;
+    return stopObj;
+  })
+  .then((stopObj) => stopObj.stops.map(makeStopFromNextBus));
+}
+
+function makeStopFromNextBus(nextbusObject) {
+  const { id, title, lat, lon } = nextbusObject;
+  return {
+    sid: id,
+    name: title,
+    lat,
+    lon,
+  };
 }
 
 module.exports = getStopsFromRouteID;

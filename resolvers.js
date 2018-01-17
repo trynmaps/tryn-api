@@ -1,6 +1,5 @@
 const getPrimaryKeys = require('./helpers/getPrimaryKeys');
 const executeQuery = require('./helpers/cassandraHelper');
-const getStateRoutes = require('./helpers/formatStateData');
 const getStopsFromRouteID = require('./helpers/getStops');
 const config = require('./config');
 
@@ -12,6 +11,8 @@ const resolvers = {
         const { agency, routes } = obj;
 
         let { startTime, endTime } = obj;
+        // times are returned as strings because GraphQL numbers are only 32-bit
+        // https://github.com/graphql/graphql-js/issues/292
         startTime = Number(startTime);
         endTime = Number(endTime);
 
@@ -30,31 +31,40 @@ const resolvers = {
         // vehicles are clustered by primary key - so put them into the same list
         const vehicles = _.flatten(responses.map(({rows}) => rows));
 
-        // cluster vehicles by their individual timestamp
-        const vehiclesByTime = vehicles.reduce((acc, vehicle) => {
-            acc[vehicle.vtime] = (acc[vehicle.vtime] || []).concat(vehicle);
+        // group the vehicles by route, and then by time
+        const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
+            acc[vehicle.rid] = acc[vehicle.rid] || [];
+            acc[vehicle.rid][vehicle.vtime] = acc[vehicle.rid][vehicle.vtime] || [];
+
+            acc[vehicle.rid][vehicle.vtime].push(vehicle);
             return acc;
         }, {});
 
-        const stateTimes = Object.keys(vehiclesByTime).sort();
-
-        const states = await Promise.all(
-            stateTimes.map(async stateTime => {
-                const stateVehicles = vehiclesByTime[stateTime];
-                const routeIDs = _.uniq(stateVehicles.map(vehicle => vehicle.rid));
-                const stops = await Promise.all(routeIDs.map(getStopsFromRouteID));
-                return {
-                    time: stateTime,
-                    routes: getStateRoutes(routeIDs, stateVehicles, stops),
-                };
-            })
-        );
+        // get all the routes
+        const routeIDs = Object.keys(vehiclesByRouteByTime);
+        
+        // get all the stops
+        let stopsByRoute = {};
+        // TODO - https://github.com/trynmaps/tryn-api/issues/13 
+        if (agency === "muni") {
+            stopsByRoute = routeIDs.reduce((acc, rid) => {
+                acc[rid] = getStopsFromRouteID(rid);
+                return acc;
+            }, {});
+        }       
 
         return {
             agency,
             startTime,
             endTime,
-            states,
+            routes: routeIDs.map(rid => ({
+                rid,
+                stops: stopsByRoute[rid],
+                routeStates: Object.keys(vehiclesByRouteByTime[rid]).map((vtime) => ({
+                    vtime,
+                    vehicles: vehiclesByRouteByTime[rid][vtime],
+                })),
+            })),
         };
     },
 }
