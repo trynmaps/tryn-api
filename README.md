@@ -40,7 +40,6 @@ query {
     }
   }
 }
-```,
-substituting startTime and endTime (they're the number of milliseconds since unix epoch).
-Note that the time interval has be when Orion was actually running.
+```
+Substitute startTime and endTime with epoch values (in milliseconds) corresponding to when Orion was actually running.
 
