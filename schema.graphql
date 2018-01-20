@@ -15,46 +15,31 @@ type NextVehicle {
     vehicle: Vehicle
 }
 
-type ServiceAlert {
-    name: String
-    message: String
-    scope: String
-    severity: String
-}
-
-type ServiceData {
-    name: String
-    value: Float
-    unit: String
-}
-
 type Stop {
     sid: String
     name: String
     lat: Float
     lon: Float
-    serviceData: [ServiceData]
-    serviceAlerts: [ServiceAlert]
     nextVehicles: [NextVehicle]
     prevVehicles: [PrevVehicle]
 }
 
-type Route {
-    name: String
-    stops: [Stop]
+type RouteState {
+    vtime: String
     vehicles: [Vehicle]
 }
 
-type State {
-    time: String
-    routes: [Route]
+type Route {
+    rid: String
+    stops: [Stop]
+    routeStates: [RouteState]
 }
 
 type TrynState {
     agency: String
     startTime: String
     endTime: String
-    states: [State]
+    routes: [Route]
 }
 
 type Query {
