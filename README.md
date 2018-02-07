@@ -17,9 +17,25 @@ https://docs.google.com/document/d/1KTWRc4EO63_lDxjcp0mmprgrFPfFazWJEy2MwxBuw4E/
 Once you run it, go to http://localhost:4000/graphql and run this query:
 ```
 query {
-  trynState(agency: "muni", startTime: "1516159925994", endTime: "1516171245800") {
+  trynState(agency: "muni", startTime: "1517973137052", endTime: "1517974848335", routes: ["14", "19", "49"], pointReliabilities: [{ lat: 37.77623977555669, lon: -122.41471856832504}]) {
     agency
     startTime
+   pointReliabilities {
+     lat
+     lon
+     arrivals {
+       rid
+       routeStates {
+         vtime
+        vehicles {
+          vid
+          lat
+          lon
+          heading
+        }
+       }
+     }
+   }
     routes {
       rid
       stops {
