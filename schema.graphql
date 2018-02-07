@@ -35,11 +35,23 @@ type Route {
     routeStates: [RouteState]
 }
 
+type PointReliability {
+   lat: Float
+   lon: Float
+   arrivals: [Route]
+}
+
 type TrynState {
     agency: String
     startTime: String
     endTime: String
     routes: [Route]
+    pointReliabilities: [PointReliability]
+}
+
+input Coordinate {
+    lat: Float
+    lon: Float
 }
 
 type Query {
@@ -48,6 +60,7 @@ type Query {
         startTime: String!
         endTime: String!
         routes: [String!]
+        pointReliabilities: [Coordinate]
     ): TrynState
 }
 

@@ -18,6 +18,7 @@
   "homepage": "https://github.com/EddyIonescu/trynmaps-backend#readme",
   "dependencies": {
     "@creditkarma/graphql-loader": "^0.6.6",
+    "@turf/turf": "^5.1.6",
     "axios": "^0.16.2",
     "cassandra-driver": "^3.3.0",
     "cors": "^2.8.4",

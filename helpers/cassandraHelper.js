@@ -10,7 +10,9 @@ client.connect((err) => {
 });
 
 function executeQuery(query, params) {
-    return client.execute(query, params, { prepare: true });
+    // TODO - fetch large sizes properly by streaming them
+    // https://docs.datastax.com/en/developer/nodejs-driver/3.2/features/paging/
+    return client.execute(query, params, { prepare: true, fetchSize: 50000 });
 }
 
 module.exports = executeQuery;

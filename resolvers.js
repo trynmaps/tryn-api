@@ -2,6 +2,7 @@ const getPrimaryKeys = require('./helpers/getPrimaryKeys');
 const executeQuery = require('./helpers/cassandraHelper');
 const getStopsFromRouteID = require('./helpers/getStops');
 const config = require('./config');
+const makePointReliabilities = require('./helpers/makePointReliabilities');
 
 const _ = require('lodash');
 const axios = require('axios');
@@ -10,7 +11,7 @@ const resolvers = {
     trynState: async (obj) => {
         const { agency, routes } = obj;
 
-        let { startTime, endTime } = obj;
+        let { startTime, endTime, pointReliabilities } = obj;
         // times are returned as strings because GraphQL numbers are only 32-bit
         // https://github.com/graphql/graphql-js/issues/292
         startTime = Number(startTime);
@@ -41,7 +42,9 @@ const resolvers = {
         }, {});
 
         // get all the routes
-        const routeIDs = Object.keys(vehiclesByRouteByTime);
+        const routeIDs = routes ? 
+            _.intersection(routes, Object.keys(vehiclesByRouteByTime)) :
+            Object.keys(vehiclesByRouteByTime);
         
         // get all the stops
         let stopsByRoute = {};
@@ -65,6 +68,8 @@ const resolvers = {
                     vehicles: vehiclesByRouteByTime[rid][vtime],
                 })),
             })),
+            pointReliabilities: (pointReliabilities || [])
+                .map(point => makePointReliabilities(point, vehiclesByRouteByTime, routeIDs)),
         };
     },
 }
