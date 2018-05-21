@@ -1,5 +1,6 @@
 type Vehicle {
     vid: String
+    did: String
     lat: Float
     lon: Float
     heading: Int
