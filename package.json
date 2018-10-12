@@ -19,13 +19,15 @@
   "dependencies": {
     "@creditkarma/graphql-loader": "^0.6.6",
     "@turf/turf": "^5.1.6",
+    "aws-sdk": "^2.334.0",
     "axios": "^0.16.2",
     "cassandra-driver": "^3.3.0",
     "cors": "^2.8.4",
     "express": "~4.15.5",
     "express-graphql": "^0.6.11",
     "graphql": "^0.10.5",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "zlib": "^1.0.5"
   },
   "peerDependencies": {
     "graphql": "^0.10.1"

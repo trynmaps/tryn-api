@@ -3,6 +3,7 @@ const executeQuery = require('./helpers/cassandraHelper');
 const getStopsFromRouteID = require('./helpers/getStops');
 const config = require('./config');
 const makePointReliabilities = require('./helpers/makePointReliabilities');
+const s3Helper = require('./helpers/s3Helper.js');
 
 const _ = require('lodash');
 const axios = require('axios');
@@ -17,8 +18,13 @@ const resolvers = {
         startTime = Number(startTime);
         endTime = Number(endTime);
 
-        const primaryKeys = getPrimaryKeys(startTime, endTime);
+        const s3Keys = await s3Helper.getOrionVehicleFiles(agency, startTime, endTime);
+        const vehicles = await s3Helper.getS3Vehicles(s3Keys);
 
+        // Deprecated code for querying Cassandra
+        // TODO - archive in different branch or remove
+        /*
+        const primaryKeys = getPrimaryKeys(startTime, endTime);
         // TODO - get these from config file using agency name
         const keyspace = agency;
         const vehicleTableName = `${agency}_realtime_vehicles`;
@@ -31,12 +37,12 @@ const resolvers = {
 
         // vehicles are clustered by primary key - so put them into the same list
         const vehicles = _.flatten(responses.map(({rows}) => rows));
+        */
 
         // group the vehicles by route, and then by time
         const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
             acc[vehicle.rid] = acc[vehicle.rid] || [];
             acc[vehicle.rid][vehicle.vtime] = acc[vehicle.rid][vehicle.vtime] || [];
-
             acc[vehicle.rid][vehicle.vtime].push(vehicle);
             return acc;
         }, {});
