@@ -13,6 +13,7 @@ app.use('/graphql', cors(), graphqlHTTP(
     graphiql: true,
   })));
 
-
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
+
+module.exports = app;
