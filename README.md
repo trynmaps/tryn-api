@@ -2,6 +2,10 @@
 
 API for the Tryn Maps webapp
 
+Can also be used for fetching data in notebooks for analysis or visualization.
+
+Here's the Getting Started guide for using the API: https://github.com/trynmaps/opentransit-api-docs/wiki/Getting-Started
+
 ## Getting Started
 
 See our welcome doc for contribution and deployment guidelines.
