@@ -55,9 +55,9 @@ const resolvers = {
         // get all the stops
         let stopsByRoute = {};
         // TODO - https://github.com/trynmaps/tryn-api/issues/13 
-        if (agency === "muni") {
+        if (agency === "muni" || agency === "ttc") {
             stopsByRoute = routeIDs.reduce((acc, rid) => {
-                acc[rid] = getStopsFromRouteID(rid);
+                acc[rid] = getStopsFromRouteID(rid, agency === "muni" ? "sf-muni" : agency);
                 return acc;
             }, {});
         }       
