@@ -3,8 +3,6 @@ const AWS = require('aws-sdk');
 var zlib = require('zlib');
 
 const s3 = new AWS.S3();
-AWS.config.loadFromPath('./prod-s3.json');
-
 
 /*
  * Gets bucket prefix at the minute-level
@@ -13,7 +11,7 @@ AWS.config.loadFromPath('./prod-s3.json');
  * @return prefix - String
  */
 function getBucketMinutePrefix(agency, currentTime) {
-  const currentDateTime = new Date(currentTime);
+  const currentDateTime = new Date(Number(currentTime));
   const year = currentDateTime.getUTCFullYear();
   const month = currentDateTime.getUTCMonth()+1;
   const day = currentDateTime.getUTCDate();
@@ -43,7 +41,7 @@ function getS3Paths(prefix) {
  */
 async function getOrionVehicleFiles (agency, startEpoch, endEpoch) {
   if (!endEpoch) {
-    endEpoch = startTime;
+    endEpoch = startEpoch;
   }
   // Idea: there are 1440 minutes in a day, and the API return at most 1-2 days,
   // so we can iterate every minute (as we have to get each file individually anyways)
