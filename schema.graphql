@@ -43,6 +43,7 @@ type PointReliability {
 }
 
 type TrynState {
+    id: ID
     agency: String
     startTime: String
     endTime: String
