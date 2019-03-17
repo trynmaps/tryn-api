@@ -68,7 +68,11 @@ const resolvers = {
             }));
         },
         stops: route => {
-            return getStopsFromRouteID(route.id, route.agency === "muni" ? "sf-muni" : route.agency);
+            if (route.agency === "muni" || route.agency === "ttc") {
+                return getStopsFromRouteID(route.id, route.agency === "muni" ? "sf-muni" : route.agency);
+            } else {
+                return [];
+            }
         }
     }
 };
