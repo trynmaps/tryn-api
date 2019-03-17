@@ -28,8 +28,9 @@ function getS3Paths(prefix) {
     }, (err, data) => {
       if (err) {
         reject(err);
+      } else {
+        resolve(data.Contents.map(obj => obj.Key));
       }
-      resolve(data.Contents.map(obj => obj.Key));
     });
   });
 }
@@ -69,10 +70,13 @@ async function getS3Vehicles(keys) {
           Bucket: "orion-vehicles",
           Key: key,
         }, (err, data) => {
-          if (err) reject(err);
-          decompressData(data.Body)
-            .then(decodedData =>
-              resolve(insertVtime(key, decodedData)));
+          if (err) {
+              reject(err);
+          } else {
+              decompressData(data.Body)
+                .then(decodedData =>
+                  resolve(insertVtime(key, decodedData)));
+          }
         });
       });
   })));

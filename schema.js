@@ -1,3 +1,10 @@
-const loader = require('@creditkarma/graphql-loader');
+const fs = require('fs');
+const path = require('path');
 
-module.exports = async () => await loader.loadSchema('./*.graphql');
+const { makeExecutableSchema } = require('graphql-tools');
+const resolvers = require('./resolvers');
+
+const schemaFile = path.join(__dirname, 'schema.graphql');
+const typeDefs = fs.readFileSync(schemaFile, 'utf8');
+
+module.exports = makeExecutableSchema({ typeDefs, resolvers });
