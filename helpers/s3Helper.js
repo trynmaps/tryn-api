@@ -4,6 +4,9 @@ var zlib = require('zlib');
 
 const s3 = new AWS.S3();
 
+const s3Bucket = process.env.TRYNAPI_S3_BUCKET || "orion-vehicles";
+console.log(`Reading state from s3://${s3Bucket}`);
+
 /*
  * Gets bucket prefix at the minute-level
  * @param agency - String
@@ -23,7 +26,7 @@ function getBucketMinutePrefix(agency, currentTime) {
 function getS3Paths(prefix) {
   return new Promise((resolve, reject) => {
     s3.listObjects({
-      Bucket: "orion-vehicles",
+      Bucket: s3Bucket,
       Prefix: prefix,
     }, (err, data) => {
       if (err) {
@@ -67,7 +70,7 @@ async function getS3Vehicles(keys) {
   return _.flatten(await Promise.all(keys.map(key => {
       return new Promise((resolve, reject) => {
         s3.getObject({
-          Bucket: "orion-vehicles",
+          Bucket: s3Bucket,
           Key: key,
         }, (err, data) => {
           if (err) {
