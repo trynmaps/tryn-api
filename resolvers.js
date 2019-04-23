@@ -4,6 +4,12 @@ const makePointReliabilities = require('./helpers/makePointReliabilities');
 const s3Helper = require('./helpers/s3Helper.js');
 const _ = require('lodash');
 
+const isRawRestbusData = process.env.TRYNAPI_S3_BUCKET === 'orion-raw';
+
+if (isRawRestbusData) {
+    console.log("S3 objects interpreted as raw Restbus data");
+}
+
 const resolvers = {
     Query: {
         trynState: async (obj, params) => {
@@ -21,9 +27,11 @@ const resolvers = {
 
             // group the vehicles by route, and then by time
             const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
-                acc[vehicle.rid] = acc[vehicle.rid] || [];
-                acc[vehicle.rid][vehicle.vtime] = acc[vehicle.rid][vehicle.vtime] || [];
-                acc[vehicle.rid][vehicle.vtime].push(vehicle);
+                const routeId = isRawRestbusData ? vehicle.routeId : vehicle.rid;
+                const vtime = vehicle.vtime;
+                acc[routeId] = acc[routeId] || [];
+                acc[routeId][vtime] = acc[routeId][vtime] || [];
+                acc[routeId][vtime].push(vehicle);
                 return acc;
             }, {});
 
@@ -74,6 +82,15 @@ const resolvers = {
                 return [];
             }
         }
+    },
+
+    Vehicle: {
+        vid: vehicle => (isRawRestbusData ? vehicle.id : vehicle.vid),
+        did: vehicle => (isRawRestbusData ? vehicle.directionId : vehicle.did),
+        lat: vehicle => vehicle.lat,
+        lon: vehicle => vehicle.lon,
+        heading: vehicle => vehicle.heading,
+        secsSinceReport: vehicle => vehicle.secsSinceReport,
     }
 };
 

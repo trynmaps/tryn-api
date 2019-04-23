@@ -4,6 +4,7 @@ type Vehicle {
     lat: Float
     lon: Float
     heading: Int
+    secsSinceReport: Int
 }
 
 type PrevVehicle {
