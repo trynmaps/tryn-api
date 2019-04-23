@@ -4,7 +4,7 @@ const makePointReliabilities = require('./helpers/makePointReliabilities');
 const s3Helper = require('./helpers/s3Helper.js');
 const _ = require('lodash');
 
-const isRawRestbusData = process.env.TRYNAPI_S3_BUCKET == 'orion-raw';
+const isRawRestbusData = process.env.TRYNAPI_S3_BUCKET === 'orion-raw';
 
 if (isRawRestbusData) {
     console.log("S3 objects interpreted as raw Restbus data");
