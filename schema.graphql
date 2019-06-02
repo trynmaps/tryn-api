@@ -5,6 +5,7 @@ type Vehicle {
     lon: Float
     heading: Int
     secsSinceReport: Int
+    numCars: Int
 }
 
 type PrevVehicle {
