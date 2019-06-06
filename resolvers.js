@@ -2,8 +2,11 @@ const getStopsFromRouteID = require('./helpers/getStops');
 const config = require('./config');
 const makePointReliabilities = require('./helpers/makePointReliabilities');
 const s3Helper = require('./helpers/s3Helper.js');
+const removeMuniMetroDuplicates = require('./helpers/removeMuniMetroDuplicates');
+
 const _ = require('lodash');
 
+const debug = !!process.env.DEBUG;
 const isRawRestbusData = process.env.TRYNAPI_S3_BUCKET === 'orion-raw';
 
 if (isRawRestbusData) {
@@ -25,15 +28,39 @@ const resolvers = {
             const s3Keys = await s3Helper.getOrionVehicleFiles(agency, startTime, endTime);
             const vehicles = await s3Helper.getS3Vehicles(s3Keys);
 
+            if (isRawRestbusData) {
+              vehicles.forEach(vehicle => {
+                vehicle.rid = vehicle.routeId;
+                vehicle.did = vehicle.directionId;
+                vehicle.vid = vehicle.id;
+                vehicle.leadingVid = vehicle.leadingVehicleId;
+              })
+            }
+
             // group the vehicles by route, and then by time
             const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
-                const routeId = isRawRestbusData ? vehicle.routeId : vehicle.rid;
+                const routeId = vehicle.rid;
                 const vtime = vehicle.vtime;
                 acc[routeId] = acc[routeId] || [];
                 acc[routeId][vtime] = acc[routeId][vtime] || [];
                 acc[routeId][vtime].push(vehicle);
                 return acc;
             }, {});
+
+            // remove duplicate Muni Metro vehicles
+            if (agency === 'muni') {
+                const affectedRouteIDs = ['KT', 'L', 'M', 'N', 'J'];
+                affectedRouteIDs.forEach(routeID => {
+                    if (debug) {
+                        console.log(routeID);
+                    }
+                    if (vehiclesByRouteByTime[routeID]) {
+                        vehiclesByRouteByTime[routeID] = removeMuniMetroDuplicates(
+                            vehiclesByRouteByTime[routeID],
+                        );
+                    }
+                });
+            }
 
             // get all the routes
             const routeIDs = routes ?
