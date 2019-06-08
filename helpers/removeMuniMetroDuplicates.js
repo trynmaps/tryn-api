@@ -117,11 +117,11 @@ const resolveLeaderlessFollowers = (
  * in the Nextbus feed. A leadingVehicleID is also included, and is used
  * to remove follower vehicles from the API result, returning only the
  * leading vehicle with a numCars field.
- * 
+ *
  * - Once vehicle A is the leading vehicle of B, that pairing will remain
  *   for the vid/rid/did combination of the leading vehicle for all states
  *   being processed by the API; see addPairings for more context.
- * 
+ *
  * - As to have consistent vehicle IDs, if a follower is present without
  *   its leader, it becomes the leader (vid and numCars fields are set).
  *   See resolveLeaderlessFollowers for more context.
@@ -136,7 +136,10 @@ const removeMuniMetroDuplicates = vehiclesByTime => {
     console.log('Follower -> Leader');
     console.log(followerToLeader);
   }
-  return Object.keys(vehiclesByTime).map(time => {
+
+  let filteredVehicles = {};
+
+  Object.keys(vehiclesByTime).map(time => {
     let vehicles = vehiclesByTime[time];
     // leading vehicles in the state have numCars added to them
     const {
@@ -161,10 +164,11 @@ const removeMuniMetroDuplicates = vehiclesByTime => {
         .filter(vehicle => pairedFollowersMap[makeVehicleKey(vehicle)])
         .map(vehicle => makeVehicleKey(vehicle)));
     }
-    vehicles = vehicles.filter(vehicle =>
+    filteredVehicles[time] = vehicles.filter(vehicle =>
       !pairedFollowersMap[makeVehicleKey(vehicle)]);
-    return vehicles;
   });
+
+  return filteredVehicles;
 };
 
 module.exports = removeMuniMetroDuplicates;
