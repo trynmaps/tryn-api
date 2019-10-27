@@ -14,7 +14,7 @@ console.log(`Reading state from s3://${s3Bucket}`);
  * @return prefix - String
  */
 function getBucketMinutePrefix(agency, currentTime) {
-  const currentDateTime = new Date(Number(currentTime));
+  const currentDateTime = new Date(Number(currentTime * 1000));
   const year = currentDateTime.getUTCFullYear();
   const month = currentDateTime.getUTCMonth()+1;
   const day = currentDateTime.getUTCDate();
@@ -43,20 +43,32 @@ function getS3Paths(prefix) {
  * @param endEpoch - Number
  * @return s3Files - [String]
  */
-async function getOrionVehicleFiles (agency, startEpoch, endEpoch) {
+async function getVehiclePaths(agency, startEpoch, endEpoch) {
   if (!endEpoch) {
-    endEpoch = startEpoch;
+    endEpoch = startEpoch + 60;
   }
   // Idea: there are 1440 minutes in a day, and the API return at most 1-2 days,
   // so we can iterate every minute (as we have to get each file individually anyways)
-  minutePrefixes = []
-  for (let time = startEpoch; time <= endEpoch; time += 60000) {
+  let minutePrefixes = [];
+  for (let time = startEpoch; time < endEpoch; time += 60) {
     minutePrefixes.push(getBucketMinutePrefix(agency, time));
   }
-  return _.flatten(await Promise.all(minutePrefixes.map(prefix => getS3Paths(prefix))));
+  let files = _.flatten(await Promise.all(minutePrefixes.map(prefix => getS3Paths(prefix))));
+
+  let timestampsMap = {};
+  let res = [];
+
+  files.map(key => {
+     const timestamp = getTimestamp(key);
+     if (timestamp >= startEpoch && timestamp < endEpoch && !timestampsMap[timestamp]) {
+         timestampsMap[timestamp] = true;
+         res.push(key);
+     }
+  });
+  return res;
 }
 
-// unzip the gzip dats
+// unzip the gzip data
 function decompressData(data) {
   return new Promise((resolve, _) => {
     return zlib.unzip(data, (_, decoded) => resolve(JSON.parse(decoded.toString())));
@@ -66,7 +78,9 @@ function decompressData(data) {
 /*
  * Downloads and unzips the S3 files
  */
-async function getS3Vehicles(keys) {
+async function getVehicles(agency, startEpoch, endEpoch) {
+  const keys = await getVehiclePaths(agency, startEpoch, endEpoch);
+
   return _.flatten(await Promise.all(keys.map(key => {
       return new Promise((resolve, reject) => {
         s3.getObject({
@@ -76,34 +90,37 @@ async function getS3Vehicles(keys) {
           if (err) {
               reject(err);
           } else {
+              const timestamp = getTimestamp(key);
               decompressData(data.Body)
                 .then(decodedData =>
-                  resolve(insertVtime(key, decodedData)));
+                  resolve(insertTimestamp(timestamp, decodedData)));
           }
         });
       });
   })));
 }
 
+function getTimestamp(key) {
+    var keyParts = key.split('-');
+    return Math.floor(Number(keyParts[keyParts.length - 1].split('.json')[0])/1000);
+}
+
 /*
- * The API defines vtime (epoch time in ms) as a field for each vehicle,
+ * The API defines timestamp (epoch time in seconds) as a field for each vehicle,
  * which was also a column in Cassandra.
- * Since the vtime is in the key in S3, that field does not exist,
- * thus we have to add it in the S3Helper as maintain compatibility
+ * Since the timestamp is in the key in S3, that field does not exist,
+ * thus we have to add it in the S3Helper to maintain compatibility
  */
-function insertVtime(key, vehicles) {
-  // time epoch is in the last part of the key
-  // .../agency_time (in ms)
-  return vehicles.map(vehicle => ({
-    ...vehicle,
-    vtime: key.split('-')[1].split('.json')[0],
-    // TODO - not very robust if naming convention changes
-    // or if dashes in agency name
-  }));
+function insertTimestamp(timestamp, vehicles) {
+  return vehicles.map(vehicle => {
+    return {
+      ...vehicle,
+      timestamp: timestamp,
+    };
+  });
 }
 
 module.exports = {
-  getOrionVehicleFiles,
-  getS3Vehicles,
+  getVehicles,
 };
 

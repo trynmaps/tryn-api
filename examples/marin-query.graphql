@@ -1,19 +1,13 @@
 # replace "marin" with "muni" to use that as the agency
 
-{
-  trynState(agency: "marin", startTime: "1510554087312") {
+query {
+  state(agency: "marin", startTime: "1572127400", endTime: "1572127900") {
     agency
     startTime
-    states {
-      time
-      routes {
-        stops {
-          sid
-          name
-          lat
-          lon
-        }
-        name
+    routes {
+      routeId
+      states {
+        timestamp
         vehicles {
           vid
           lat

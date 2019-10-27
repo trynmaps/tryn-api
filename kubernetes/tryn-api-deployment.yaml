@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: tryn-api
+  name: tryn-api
+spec:
+  selector:
+    matchLabels:
+      run: tryn-api
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: tryn-api
+    spec:
+      containers:
+      - image: gcr.io/poetic-genius-233804/tryn-api:latest
+        imagePullPolicy: IfNotPresent
+        name: tryn-api
+        resources:
+          requests:
+            cpu: 0.03
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: aws_access_key_id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-credentials
+                key: aws_secret_access_key

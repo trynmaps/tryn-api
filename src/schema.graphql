@@ -1,0 +1,42 @@
+type VehicleState {
+    vid: String
+    did: String
+    lat: Float
+    lon: Float
+    heading: Int
+    secsSinceReport: Int
+    numCars: Int
+    tripId: String
+    stopIndex: Int
+    status: Int
+}
+
+type RouteState {
+    timestamp: String
+    vehicles: [VehicleState]
+}
+
+type RouteHistory {
+    routeId: String
+    states: [RouteState]
+}
+
+type AgencyState {
+    agency: String
+    startTime: String
+    endTime: String
+    routes: [RouteHistory]
+}
+
+type Query {
+    state(
+        agency: String!
+        startTime: String!
+        endTime: String!
+        routes: [String!]
+    ): AgencyState
+}
+
+schema {
+    query: Query
+}

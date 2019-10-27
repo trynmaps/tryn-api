@@ -1,46 +1,28 @@
-const getStopsFromRouteID = require('./helpers/getStops');
-const config = require('./config');
-const makePointReliabilities = require('./helpers/makePointReliabilities');
 const s3Helper = require('./helpers/s3Helper.js');
 const removeMuniMetroDuplicates = require('./helpers/removeMuniMetroDuplicates');
 
 const _ = require('lodash');
 
 const debug = !!process.env.DEBUG;
-const isRawRestbusData = process.env.TRYNAPI_S3_BUCKET === 'orion-raw';
-
-if (isRawRestbusData) {
-    console.log("S3 objects interpreted as raw Restbus data");
-}
 
 const resolvers = {
     Query: {
-        trynState: async (obj, params) => {
+        state: async (obj, params) => {
             const { agency, routes } = params;
 
-            let { startTime, endTime, pointReliabilities } = params;
+            let { startTime, endTime } = params;
 
             // times are returned as strings because GraphQL numbers are only 32-bit
             // https://github.com/graphql/graphql-js/issues/292
             startTime = Number(startTime);
             endTime = Number(endTime);
 
-            const s3Keys = await s3Helper.getOrionVehicleFiles(agency, startTime, endTime);
-            const vehicles = await s3Helper.getS3Vehicles(s3Keys);
-
-            if (isRawRestbusData) {
-              vehicles.forEach(vehicle => {
-                vehicle.rid = vehicle.routeId;
-                vehicle.did = vehicle.directionId;
-                vehicle.vid = vehicle.id;
-                vehicle.leadingVid = vehicle.leadingVehicleId;
-              })
-            }
+            const vehicles = await s3Helper.getVehicles(agency, startTime, endTime);
 
             // group the vehicles by route, and then by time
             const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
                 const routeId = vehicle.rid;
-                const vtime = vehicle.vtime;
+                const vtime = vehicle.timestamp;
                 acc[routeId] = acc[routeId] || [];
                 acc[routeId][vtime] = acc[routeId][vtime] || [];
                 acc[routeId][vtime].push(vehicle);
@@ -72,13 +54,12 @@ const resolvers = {
                 routeIDs,
                 startTime,
                 endTime,
-                pointReliabilities,
                 vehiclesByRouteByTime
             };
         },
     },
 
-    TrynState: {
+    AgencyState: {
         agency: obj => obj.agency,
         startTime: obj => obj.startTime,
         endTime: obj => obj.endTime,
@@ -86,38 +67,31 @@ const resolvers = {
             return obj.routeIDs.map((rid) => {
                 return {id: rid, agency: obj.agency, vehiclesByTime: obj.vehiclesByRouteByTime[rid]};
             });
-        },
-        pointReliabilities: obj => {
-            return (obj.pointReliabilities || [])
-                .map(point => makePointReliabilities(point, obj.vehiclesByRouteByTime, obj.routeIDs));
         }
     },
 
-    Route: {
-        rid: route => route.id,
-        routeStates: route => {
+    RouteHistory: {
+        routeId: route => route.id,
+        states: route => {
             const vehiclesByTime = route.vehiclesByTime || {};
-            return Object.keys(vehiclesByTime).map((vtime) => ({
-                vtime,
-                vehicles: vehiclesByTime[vtime],
+            return Object.keys(vehiclesByTime).map((timestamp) => ({
+                timestamp: timestamp,
+                vehicles: vehiclesByTime[timestamp],
             }));
-        },
-        stops: route => {
-            if (route.agency === "muni" || route.agency === "ttc") {
-                return getStopsFromRouteID(route.id, route.agency === "muni" ? "sf-muni" : route.agency);
-            } else {
-                return [];
-            }
         }
     },
 
-    Vehicle: {
-        vid: vehicle => (isRawRestbusData ? vehicle.id : vehicle.vid),
-        did: vehicle => (isRawRestbusData ? vehicle.directionId : vehicle.did),
+    VehicleState: {
+        vid: vehicle => vehicle.vid,
+        did: vehicle => vehicle.did,
         lat: vehicle => vehicle.lat,
         lon: vehicle => vehicle.lon,
         heading: vehicle => vehicle.heading,
         secsSinceReport: vehicle => vehicle.secsSinceReport,
+        numCars: vehicle => vehicle.numCars,
+        tripId: vehicle => vehicle.tripId,
+        stopIndex: vehicle => vehicle.stopIndex,
+        status: vehicle => vehicle.status,
     }
 };
 
