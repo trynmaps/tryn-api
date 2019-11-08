@@ -101,7 +101,7 @@ async function getVehicles(agency, startEpoch, endEpoch) {
 }
 
 function getTimestamp(key) {
-    var keyParts = key.split('-');
+    const keyParts = key.split('-');
     return Math.floor(Number(keyParts[keyParts.length - 1].split('.json')[0])/1000);
 }
 
