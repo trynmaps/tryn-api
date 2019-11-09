@@ -1,8 +1,8 @@
 # replace "marin" with "muni" to use that as the agency
 
 query {
-  state(agency: "marin", startTime: "1572127400", endTime: "1572127900") {
-    agency
+  state(agencyId: "marin", startTime: 1572127400, endTime: 1572127900) {
+    agencyId
     startTime
     routes {
       routeId

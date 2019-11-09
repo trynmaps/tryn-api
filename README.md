@@ -46,17 +46,17 @@ The root query object for the API.
 | Parameter Name | Type | Description |
 | --- | --- | --- |
 | `agency` | `String!` | ID of the agency. The agency ID should be the same ID used in the configuration for Orion. |
-| `startTime` | `String!` | Start timestamp in seconds since the Unix epoch (as a string). |
-| `endTime` | `String!` | End timestamp in seconds since the Unix epoch (as a string), exclusive. |
+| `startTime` | `BigInt!` | Start timestamp in seconds since the Unix epoch. |
+| `endTime` | `BigInt!` | End timestamp in seconds since the Unix epoch , exclusive. |
 | `routes` | `[String!]` | List of route IDs to return vehicle data. |
 
 ### AgencyState
 
 | Field Name | Type | Description |
 | --- | --- | --- |
-| `agency` | `String` | ID of the agency. The agency ID should be the same ID used in the configuration for Orion. |
-| `startTime` | `String` | Start timestamp in seconds since the Unix epoch (as a string). |
-| `endTime` | `String` | End timestamp in seconds since the Unix epoch (as a string), exclusive. |
+| `agencyId` | `String` | ID of the agency. The agency ID should be the same ID used in the configuration for Orion. |
+| `startTime` | `BigInt` | Start timestamp in seconds since the Unix epoch. |
+| `endTime` | `BigInt` | End timestamp in seconds since the Unix epoch, exclusive. |
 | `routes` | [`[RouteHistory]`](#routehistory) | Array of historical state for each route. |
 
 ### RouteHistory
@@ -72,7 +72,7 @@ State of a particular route at a particular time.
 
 | Field Name | Type | Description |
 | --- | --- | --- |
-| `timestamp` | `String` | Timestamp when vehicle data was retrieved, in seconds since the Unix epoch (as a string). |
+| `timestamp` | `BigInt` | Timestamp when vehicle data was retrieved, in seconds since the Unix epoch. |
 | `vehicles` | [`[VehicleState]`](#vehiclestate) | Array of vehicles observed at this timestamp. |
 
 ### VehicleState
@@ -98,8 +98,8 @@ Once you run it, go to http://localhost:4000/graphql in your browser and run thi
 
 ```
 query {
-  state(agency: "muni", startTime: "1572105600", endTime: "1572112800", routes: ["14", "19", "49"]) {
-    agency
+  state(agencyId: "muni", startTime: 1572105600, endTime: 1572112800, routes: ["14", "19", "49"]) {
+    agencyId
     startTime
     routes {
       routeId
