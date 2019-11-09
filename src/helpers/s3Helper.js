@@ -9,18 +9,18 @@ console.log(`Reading state from s3://${s3Bucket}`);
 
 /*
  * Gets bucket prefix at the minute-level
- * @param agency - String
+ * @param agencyId - String
  * @param currentTime - Number
  * @return prefix - String
  */
-function getBucketMinutePrefix(agency, currentTime) {
+function getBucketMinutePrefix(agencyId, currentTime) {
   const currentDateTime = new Date(Number(currentTime * 1000));
   const year = currentDateTime.getUTCFullYear();
   const month = currentDateTime.getUTCMonth()+1;
   const day = currentDateTime.getUTCDate();
   const hour = currentDateTime.getUTCHours();
   const minute = currentDateTime.getUTCMinutes();
-  return `${agency}/${year}/${month}/${day}/${hour}/${minute}/`;
+  return `${agencyId}/${year}/${month}/${day}/${hour}/${minute}/`;
 }
 
 function getS3Paths(prefix) {
@@ -43,7 +43,7 @@ function getS3Paths(prefix) {
  * @param endEpoch - Number
  * @return s3Files - [String]
  */
-async function getVehiclePaths(agency, startEpoch, endEpoch) {
+async function getVehiclePaths(agencyId, startEpoch, endEpoch) {
   if (!endEpoch) {
     endEpoch = startEpoch + 60;
   }
@@ -51,7 +51,7 @@ async function getVehiclePaths(agency, startEpoch, endEpoch) {
   // so we can iterate every minute (as we have to get each file individually anyways)
   let minutePrefixes = [];
   for (let time = startEpoch; time < endEpoch; time += 60) {
-    minutePrefixes.push(getBucketMinutePrefix(agency, time));
+    minutePrefixes.push(getBucketMinutePrefix(agencyId, time));
   }
   let files = _.flatten(await Promise.all(minutePrefixes.map(prefix => getS3Paths(prefix))));
 
@@ -78,8 +78,8 @@ function decompressData(data) {
 /*
  * Downloads and unzips the S3 files
  */
-async function getVehicles(agency, startEpoch, endEpoch) {
-  const keys = await getVehiclePaths(agency, startEpoch, endEpoch);
+async function getVehicles(agencyId, startEpoch, endEpoch) {
+  const keys = await getVehiclePaths(agencyId, startEpoch, endEpoch);
 
   return _.flatten(await Promise.all(keys.map(key => {
       return new Promise((resolve, reject) => {

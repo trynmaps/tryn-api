@@ -1,3 +1,5 @@
+scalar BigInt
+
 type VehicleState {
     vid: String
     did: String
@@ -12,7 +14,7 @@ type VehicleState {
 }
 
 type RouteState {
-    timestamp: String
+    timestamp: BigInt
     vehicles: [VehicleState]
 }
 
@@ -22,17 +24,17 @@ type RouteHistory {
 }
 
 type AgencyState {
-    agency: String
-    startTime: String
-    endTime: String
+    agencyId: String
+    startTime: BigInt
+    endTime: BigInt
     routes: [RouteHistory]
 }
 
 type Query {
     state(
-        agency: String!
-        startTime: String!
-        endTime: String!
+        agencyId: String!
+        startTime: BigInt!
+        endTime: BigInt!
         routes: [String!]
     ): AgencyState
 }

@@ -1,23 +1,24 @@
 const s3Helper = require('./helpers/s3Helper.js');
 const removeMuniMetroDuplicates = require('./helpers/removeMuniMetroDuplicates');
+const BigInt = require('./bigint');
 
 const _ = require('lodash');
 
 const debug = !!process.env.DEBUG;
 
 const resolvers = {
+
+    // use BigInt to represent Unix timestamps because GraphQL Int type is only 32-bit
+    // and would overflow in January 2038 https://github.com/graphql/graphql-js/issues/292
+    BigInt: BigInt,
+
     Query: {
         state: async (obj, params) => {
-            const { agency, routes } = params;
+            const { agencyId, routes } = params;
 
             let { startTime, endTime } = params;
 
-            // times are returned as strings because GraphQL numbers are only 32-bit
-            // https://github.com/graphql/graphql-js/issues/292
-            startTime = Number(startTime);
-            endTime = Number(endTime);
-
-            const vehicles = await s3Helper.getVehicles(agency, startTime, endTime);
+            const vehicles = await s3Helper.getVehicles(agencyId, startTime, endTime);
 
             // group the vehicles by route, and then by time
             const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
@@ -30,7 +31,7 @@ const resolvers = {
             }, {});
 
             // remove duplicate Muni Metro vehicles
-            if (agency === 'muni') {
+            if (agencyId === 'muni') {
                 const affectedRouteIDs = ['KT', 'L', 'M', 'N', 'J'];
                 affectedRouteIDs.forEach(routeID => {
                     if (debug) {
@@ -50,7 +51,7 @@ const resolvers = {
                 Object.keys(vehiclesByRouteByTime);
 
             return {
-                agency,
+                agencyId,
                 routeIDs,
                 startTime,
                 endTime,
@@ -60,12 +61,12 @@ const resolvers = {
     },
 
     AgencyState: {
-        agency: obj => obj.agency,
+        agencyId: obj => obj.agencyId,
         startTime: obj => obj.startTime,
         endTime: obj => obj.endTime,
         routes: obj => {
             return obj.routeIDs.map((rid) => {
-                return {id: rid, agency: obj.agency, vehiclesByTime: obj.vehiclesByRouteByTime[rid]};
+                return {id: rid, agencyId: obj.agencyId, vehiclesByTime: obj.vehiclesByRouteByTime[rid]};
             });
         }
     },

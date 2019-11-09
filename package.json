@@ -23,17 +23,17 @@
     "axios": "^0.18.1",
     "cors": "^2.8.4",
     "express": "~4.15.5",
-    "express-graphql": "^0.6.11",
+    "express-graphql": "^0.9.0",
     "lodash": "^4.17.13",
     "zlib": "^1.0.5"
   },
   "peerDependencies": {
-    "graphql": "^0.10.1"
+    "graphql": "^14.5.8"
   },
   "devDependencies": {
     "apollo-server-lambda": "^2.1.0",
     "aws-serverless-express": "^3.3.5",
-    "graphql": "^0.10.5",
+    "graphql": "^14.5.8",
     "nodemon": "^1.12.1"
   }
 }
