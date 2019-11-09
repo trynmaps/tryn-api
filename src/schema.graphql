@@ -1,0 +1,44 @@
+scalar BigInt
+
+type VehicleState {
+    vid: String
+    did: String
+    lat: Float
+    lon: Float
+    heading: Int
+    secsSinceReport: Int
+    numCars: Int
+    tripId: String
+    stopIndex: Int
+    status: Int
+}
+
+type RouteState {
+    timestamp: BigInt
+    vehicles: [VehicleState]
+}
+
+type RouteHistory {
+    routeId: String
+    states: [RouteState]
+}
+
+type AgencyState {
+    agencyId: String
+    startTime: BigInt
+    endTime: BigInt
+    routes: [RouteHistory]
+}
+
+type Query {
+    state(
+        agencyId: String!
+        startTime: BigInt!
+        endTime: BigInt!
+        routes: [String!]
+    ): AgencyState
+}
+
+schema {
+    query: Query
+}

@@ -1,3 +1,2 @@
 node_modules
-prod-config.json
-prod-s3.json
+docker-compose.override.yml

@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  tryn-api-dev:
+    container_name: tryn-api-dev
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./src:/usr/src/app/src

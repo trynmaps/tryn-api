@@ -10,13 +10,10 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-# Use prod-config, comment out to use local env config
-COPY prod-config.json ./config.json
-
 CMD [ "npm", "start" ]
 
 # Build
-# docker build -t trynmaps-api .
+# docker build -t tryn-api .
 
 # Run
-# docker run -p 4000:4000 trynmaps-api:latest
+# docker run -p 4000:4000 tryn-api:latest
