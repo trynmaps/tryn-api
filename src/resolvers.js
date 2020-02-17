@@ -36,6 +36,7 @@ const resolvers = {
                     vehiclesByRouteByTime[routeId][vtime] = [];
                 }
 
+                // check for multiple vehicles with the same tripId, assume to be multiple-car trains if close to each other
                 const tripId = vehicle.tripId;
                 if (tripId) {
                     if (!vehiclesByTripByTime[tripId]) {
@@ -45,7 +46,7 @@ const resolvers = {
                     if (!prevVehicle) {
                         vehiclesByTripByTime[tripId][vtime] = vehicle;
                     } else if (Math.abs(prevVehicle.lat - vehicle.lat) < 0.001 && Math.abs(prevVehicle.lon - vehicle.lon) < 0.001) {
-                        //console.log("multi-car vehicle for trip " + tripId + " at "+vtime+" : " + vehicle.vid + " " + prevVehicle.vid);
+                        // 0.001 degrees latitude = 111m, 0.001 degrees longitude typically between between ~50m and 111m
                         prevVehicle.numCars = (prevVehicle.numCars || 1) + 1;
                         if (prevVehicle.vid > vehicle.vid) {
                             prevVehicle.vid = vehicle.vid;
