@@ -20,15 +20,42 @@ const resolvers = {
 
             const vehicles = await s3Helper.getVehicles(agencyId, startTime, endTime);
 
+            const vehiclesByTripByTime = {};
+            const vehiclesByRouteByTime = {};
+
             // group the vehicles by route, and then by time
-            const vehiclesByRouteByTime = vehicles.reduce((acc, vehicle) => {
+
+            vehicles.forEach(vehicle => {
                 const routeId = vehicle.rid;
                 const vtime = vehicle.timestamp;
-                acc[routeId] = acc[routeId] || [];
-                acc[routeId][vtime] = acc[routeId][vtime] || [];
-                acc[routeId][vtime].push(vehicle);
-                return acc;
-            }, {});
+
+                if (!vehiclesByRouteByTime[routeId]) {
+                    vehiclesByRouteByTime[routeId] = {};
+                }
+                if (!vehiclesByRouteByTime[routeId][vtime]) {
+                    vehiclesByRouteByTime[routeId][vtime] = [];
+                }
+
+                const tripId = vehicle.tripId;
+                if (tripId) {
+                    if (!vehiclesByTripByTime[tripId]) {
+                        vehiclesByTripByTime[tripId] = {};
+                    }
+                    const prevVehicle = vehiclesByTripByTime[tripId][vtime];
+                    if (!prevVehicle) {
+                        vehiclesByTripByTime[tripId][vtime] = vehicle;
+                    } else if (Math.abs(prevVehicle.lat - vehicle.lat) < 0.001 && Math.abs(prevVehicle.lon - vehicle.lon) < 0.001) {
+                        //console.log("multi-car vehicle for trip " + tripId + " at "+vtime+" : " + vehicle.vid + " " + prevVehicle.vid);
+                        prevVehicle.numCars = (prevVehicle.numCars || 1) + 1;
+                        if (prevVehicle.vid > vehicle.vid) {
+                            prevVehicle.vid = vehicle.vid;
+                        }
+                        return;
+                    }
+                }
+
+                vehiclesByRouteByTime[routeId][vtime].push(vehicle);
+            });
 
             // remove duplicate Muni Metro vehicles
             if (agencyId === 'muni') {
@@ -91,6 +118,7 @@ const resolvers = {
         secsSinceReport: vehicle => vehicle.secsSinceReport,
         numCars: vehicle => vehicle.numCars,
         tripId: vehicle => vehicle.tripId,
+        stopId: vehicle => vehicle.stopId,
         stopIndex: vehicle => vehicle.stopIndex,
         status: vehicle => vehicle.status,
     }
