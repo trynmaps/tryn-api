@@ -10,6 +10,7 @@ type VehicleState {
     numCars: Int
     tripId: String
     stopIndex: Int
+    stopId: String
     status: Int
 }
 
