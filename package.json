@@ -31,7 +31,7 @@
     "graphql": "^14.5.8"
   },
   "devDependencies": {
-    "apollo-server-lambda": "^2.1.0",
+    "apollo-server-lambda": "^2.14.2",
     "aws-serverless-express": "^3.3.5",
     "graphql": "^14.5.8",
     "nodemon": "^1.12.1"
