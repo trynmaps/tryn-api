@@ -24,7 +24,7 @@
     "cors": "^2.8.4",
     "express": "~4.15.5",
     "express-graphql": "^0.9.0",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "zlib": "^1.0.5"
   },
   "peerDependencies": {
