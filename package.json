@@ -20,7 +20,7 @@
     "@creditkarma/graphql-loader": "^0.6.6",
     "@turf/turf": "^5.1.6",
     "aws-sdk": "^2.334.0",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "cors": "^2.8.4",
     "express": "~4.15.5",
     "express-graphql": "^0.9.0",
