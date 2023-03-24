@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -19,7 +19,7 @@ spec:
         run: tryn-api
     spec:
       containers:
-      - image: gcr.io/poetic-genius-233804/tryn-api:latest
+      - image: gcr.io/busviz/tryn-api:latest
         imagePullPolicy: IfNotPresent
         name: tryn-api
         resources:
