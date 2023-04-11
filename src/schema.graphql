@@ -12,6 +12,7 @@ type VehicleState {
     stopIndex: Int
     stopId: String
     status: Int
+    label: String
 }
 
 type RouteState {

@@ -122,6 +122,7 @@ const resolvers = {
         stopId: vehicle => vehicle.stopId,
         stopIndex: vehicle => vehicle.stopIndex,
         status: vehicle => vehicle.status,
+        label: vehicle => vehicle.label,
     }
 };
 
