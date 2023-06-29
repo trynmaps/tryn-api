@@ -11,6 +11,11 @@ app.use('/graphql', cors(), graphqlHTTP(
     graphiql: true,
   })));
 
+// Required for Kubernetes health check - otherwise the ingress will not route to the pod hosting tryn-api.
+app.get('/', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.listen(4000);
 console.log('Running a GraphQL API server at localhost:4000/graphql');
 
