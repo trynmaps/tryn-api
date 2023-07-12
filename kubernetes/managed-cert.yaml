@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: tryn-api-cert
+spec:
+  domains:
+    - tryn-api.transify.ca
