@@ -93,8 +93,22 @@ const resolvers = {
         startTime: obj => obj.startTime,
         endTime: obj => obj.endTime,
         routes: obj => {
+            const { vehiclesByRouteByTime } = obj;
+            if (!vehiclesByRouteByTime) {
+                return {};
+            }
             return obj.routeIDs.map((rid) => {
-                return {id: rid, agencyId: obj.agencyId, vehiclesByTime: obj.vehiclesByRouteByTime[rid]};
+                const matchedOpentransitRouteID = Object.keys(vehiclesByRouteByTime).filter(opentransitRouteID => {
+                    // Match when the first part of the route ID in the S3 file matches the route ID
+                    // provided - required for Brampton Transit where route IDs change on every schedule change.
+                    // E.g. 501-337 when the given route ID is 501.
+                    return (opentransitRouteID === rid || opentransitRouteID.split('-')[0] === rid);
+                });
+                return {
+                    id: rid,
+                    agencyId: obj.agencyId,
+                    vehiclesByTime: vehiclesByRouteByTime[matchedOpentransitRouteID],
+                };
             });
         }
     },
