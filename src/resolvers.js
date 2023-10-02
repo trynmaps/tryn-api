@@ -26,7 +26,13 @@ const resolvers = {
             // group the vehicles by route, and then by time
 
             vehicles.forEach(vehicle => {
-                const routeId = vehicle.rid;
+                let routeId = vehicle.rid;
+                if (agencyId === 'brampton' && routeId.includes('-')) {
+                    // Remove the first part of the route ID in the S3 file so that it matches the route ID
+                    // provided - required for Brampton Transit where route IDs change on every schedule change.
+                    // E.g. 501-337 when the given route ID is 501.
+                    routeId = routeId.split('-')[0];
+                }
                 const vtime = vehicle.timestamp;
 
                 if (!vehiclesByRouteByTime[routeId]) {
@@ -93,22 +99,8 @@ const resolvers = {
         startTime: obj => obj.startTime,
         endTime: obj => obj.endTime,
         routes: obj => {
-            const { vehiclesByRouteByTime } = obj;
-            if (!vehiclesByRouteByTime) {
-                return {};
-            }
             return obj.routeIDs.map((rid) => {
-                const matchedOpentransitRouteID = Object.keys(vehiclesByRouteByTime).filter(opentransitRouteID => {
-                    // Match when the first part of the route ID in the S3 file matches the route ID
-                    // provided - required for Brampton Transit where route IDs change on every schedule change.
-                    // E.g. 501-337 when the given route ID is 501.
-                    return (opentransitRouteID === rid || opentransitRouteID.split('-')[0] === rid);
-                });
-                return {
-                    id: rid,
-                    agencyId: obj.agencyId,
-                    vehiclesByTime: vehiclesByRouteByTime[matchedOpentransitRouteID],
-                };
+                return {id: rid, agencyId: obj.agencyId, vehiclesByTime: obj.vehiclesByRouteByTime[rid]};
             });
         }
     },
