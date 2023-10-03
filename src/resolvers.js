@@ -31,7 +31,9 @@ const resolvers = {
                     // Remove the first part of the route ID in the S3 file so that it matches the route ID
                     // provided - required for Brampton Transit where route IDs change on every schedule change.
                     // E.g. 501-337 when the given route ID is 501.
-                    routeId = routeId.split('-')[0];
+
+                    // REVERT AS IT BROKE METRICS-MVP
+                    // routeId = routeId.split('-')[0];
                 }
                 const vtime = vehicle.timestamp;
 
