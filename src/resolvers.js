@@ -27,13 +27,16 @@ const resolvers = {
 
             vehicles.forEach(vehicle => {
                 let routeId = vehicle.rid;
-                if (agencyId === 'brampton' && routeId.includes('-')) {
+                if (agencyId === 'brampton' && routeId.includes('-') && Array.isArray(routes)) {
                     // Remove the first part of the route ID in the S3 file so that it matches the route ID
                     // provided - required for Brampton Transit where route IDs change on every schedule change.
                     // E.g. 501-337 when the given route ID is 501.
-
-                    // REVERT AS IT BROKE METRICS-MVP
-                    // routeId = routeId.split('-')[0];
+                    // Avoid renaming if the request does not include the first part of the route ID as metrics-mvp
+                    // relies on the original behaviour where the full GTFS route IDs are used.
+                    const newRouteId = routeId.split('-')[0];
+                    if (routes.includes(newRouteId) && !routes.includes(routeId)) {
+                        routeId = newRouteId;
+                    }
                 }
                 const vtime = vehicle.timestamp;
 
@@ -81,6 +84,9 @@ const resolvers = {
                 });
             }
 
+            const getMatchedRoutes = (routes, vehiclesByRouteByTime) => {
+                // Return the route objects 
+            }
             // get all the routes
             const routeIDs = routes ?
                 _.intersection(routes, Object.keys(vehiclesByRouteByTime)) :
@@ -101,6 +107,7 @@ const resolvers = {
         startTime: obj => obj.startTime,
         endTime: obj => obj.endTime,
         routes: obj => {
+            // The input here comes from Query.
             return obj.routeIDs.map((rid) => {
                 return {id: rid, agencyId: obj.agencyId, vehiclesByTime: obj.vehiclesByRouteByTime[rid]};
             });
