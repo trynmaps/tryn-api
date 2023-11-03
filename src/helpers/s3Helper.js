@@ -8,19 +8,18 @@ const s3Bucket = process.env.TRYNAPI_S3_BUCKET || "orion-vehicles";
 console.log(`Reading state from s3://${s3Bucket}`);
 
 /*
- * Gets bucket prefix at the minute-level
+ * Gets bucket prefix at the hour-level
  * @param agencyId - String
  * @param currentTime - Number
  * @return prefix - String
  */
-function getBucketMinutePrefix(agencyId, currentTime) {
+function getBucketHourPrefix(agencyId, currentTime) {
   const currentDateTime = new Date(Number(currentTime * 1000));
   const year = currentDateTime.getUTCFullYear();
   const month = currentDateTime.getUTCMonth()+1;
   const day = currentDateTime.getUTCDate();
   const hour = currentDateTime.getUTCHours();
-  const minute = currentDateTime.getUTCMinutes();
-  return `${agencyId}/${year}/${month}/${day}/${hour}/${minute}/`;
+  return `${agencyId}/${year}/${month}/${day}/${hour}/`;
 }
 
 function getS3Paths(prefix) {
@@ -47,25 +46,47 @@ async function getVehiclePaths(agencyId, startEpoch, endEpoch) {
   if (!endEpoch) {
     endEpoch = startEpoch + 60;
   }
-  // Idea: there are 1440 minutes in a day, and the API return at most 1-2 days,
-  // so we can iterate every minute (as we have to get each file individually anyways)
-  let minutePrefixes = [];
-  for (let time = startEpoch; time < endEpoch; time += 60) {
-    minutePrefixes.push(getBucketMinutePrefix(agencyId, time));
+
+  // Convert Unix timestamps to Date objects
+  const startDate = new Date(startEpoch * 1000); // Multiply by 1000 to convert to milliseconds
+  const endDate = new Date(endEpoch * 1000);
+
+  // Get the hour-level prefixes between the start and end dates
+  // For each hour-level prefix, we query all S3 objects with that prefix and check that the actual S3 modifiedDate
+  // fits the parameters
+  let hourPrefix = new Set();
+  for (let time = startEpoch - 3600; time <= endEpoch + 3600; time += 3600) {
+    hourPrefix.add(getBucketHourPrefix(agencyId, time));
   }
-  let files = _.flatten(await Promise.all(minutePrefixes.map(prefix => getS3Paths(prefix))));
 
-  let timestampsMap = {};
-  let res = [];
+  let hourPrefixArr = Array.from(hourPrefix);
 
-  files.map(key => {
-     const timestamp = getTimestamp(key);
-     if (timestamp >= startEpoch && timestamp < endEpoch && !timestampsMap[timestamp]) {
-         timestampsMap[timestamp] = true;
-         res.push(key);
-     }
-  });
-  return res;
+  // Initialize an array to store the file paths
+  const s3Files = new Set();
+
+  const timestampsMap = new Set();
+
+  for (const prefix of hourPrefixArr) {
+    // Parameters for listing objects in the S3 bucket
+    const params = {
+      Bucket: s3Bucket,
+      Prefix: prefix,
+    };
+
+
+    const data = await s3.listObjectsV2(params).promise();
+
+    for (const object of data.Contents) {
+      const objectDate = object.LastModified;
+      const timestamp = getTimestamp(object.Key);
+      if (objectDate >= startDate && objectDate <= endDate && !timestampsMap.has(timestamp)) {
+        timestampsMap.add(timestamp);
+        s3Files.add(object.Key);
+      }
+    }
+  }
+
+  return Array.from(s3Files);
 }
 
 // unzip the gzip data
